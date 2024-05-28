@@ -89,7 +89,7 @@ class CameraProcessingNode(Node):
             topic_name = topic_data[0]
             topic_type = topic_data[1][0]
             # Check the topic's type
-            if topic_type != 'sensor_msgs/msg/Image':
+            if topic_type != 'sensor_msgs/msg/CompressedImage':
                 # If it does not exist, skip this data
                 continue
             ret_data[topic_name] = topic_type
@@ -102,10 +102,10 @@ class CameraProcessingNode(Node):
         for image_topic in topic_keys:
             self.get_logger().info(f"Attempting to subscribe to topic \"{image_topic}\"")
             # Callback provided to general subscribers for cameras
-            # msg is of type sensor_msgs.msg.Image
+            # msg is of type sensor_msgs.msg.CompressedImage
             def general_camera_callback(msg):
                 self.get_logger().info(f"Camera data received.")
-                current_frame = self.opencv_bridge.imgmsg_to_cv2(msg)
+                current_frame = self.opencv_bridge.compressed_imgmsg_to_cv2(msg)
             
                 b,g,r = cv2.split(current_frame)
                 frame_rgb = cv2.merge((r,g,b))
@@ -118,7 +118,7 @@ class CameraProcessingNode(Node):
                 # matplotlib.pyplot.show()
             # Create the subscriber
             self.create_subscription(
-                sensor_msgs.msg.Image,
+                sensor_msgs.msg.CompressedImage,
                 image_topic,
                 general_camera_callback,
                 10

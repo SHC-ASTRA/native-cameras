@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'camera_exec = camera_cv.camera_exec:main'
+            'compressed = camera_cv.compressed_subscriber:main',
+            'raw = camera_cv.raw_subscriber:main'
         ],
     },
 )

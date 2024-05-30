@@ -59,6 +59,6 @@ class RosHandler():
     def ros_shutdown(kill_node=None):
         # If rclpy is currently functioning
         if rclpy.ok():
-            if kill_node not None:
+            if kill_node is not None:
                 kill_node.get_logger().info("Shutting down rclpy.")
             rclpy.shutdown()

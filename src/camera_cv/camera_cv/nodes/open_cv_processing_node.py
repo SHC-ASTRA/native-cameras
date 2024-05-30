@@ -20,7 +20,7 @@ import queue
 class CVProcessingNode(Node):
     opencv_bridge = CvBridge()
     # Queue of frames for processing
-    frame_queue = 
+    frame_queue = queue.SimpleQueue()
     # Frame values, for queue management
     frame_values = {}
     # Subscriptions
@@ -40,9 +40,6 @@ class CVProcessingNode(Node):
 
         self.get_logger().info(f"Subscriber node open_cv_processor_{dt_hhmmss} started")
 
-        # Done for each new image recieved
-        # self.declare_parameter('my_parameter', 'world')
-
         # Subscription configuration assignment
         self.sub_config = in_config
         # Subscribe to relays, checking config
@@ -60,7 +57,7 @@ class CVProcessingNode(Node):
         if self.sub_config.compressed:
             compressed_sub = self.create_subscription(
                 camera_cv_interfaces.msg.InternodeCameraCompressed,
-                "astra/intraprocess/native_cameras/cam_proc_out/compressed"
+                "/astra/intraprocess/native_cameras/cam_proc_out/compressed"
                 self.intake_compressed_image
                 10
             )
@@ -78,6 +75,7 @@ class CVProcessingNode(Node):
         pass
 
     def rotate_frames(self):
+        # Check the parameter for the frame data
         pass
     
     # Dequeue frames from the running queue
@@ -86,7 +84,7 @@ class CVProcessingNode(Node):
     
     # Process a frame into the running queue
     def queue_frame(self, frame):
-        pass
+        if 
         
 
     # Perform color swapping in the event the image
@@ -97,9 +95,21 @@ class CVProcessingNode(Node):
         queue_frame(color_correct_frame)
 
     def inital_process_frame(self, frame, internode_data):
-        # Process through the data
-        # add it to a list and process
-        # if frame.
+        # Process through the data provided
+        # add it to a dict and process
+
+        # If the frame's data is not currently located in the keys,
+        # update the dict
+        if internode_data.topic_name not in frame_values.keys():
+            frame_values[internode_data.topic_name] = {
+                "parent": internode_data.parent_node
+            }
+            # Create a parameter for the frame's rotation
+            param_descriptor = ParameterDescriptor(
+                # Descriptor to the current parameter
+                description=f""
+            )
+            self.declare_parameter(f'rotation/{internode_data.topic_name}', 0, param_descriptor)
 
         self.color_correct_frame(current_frame)
 

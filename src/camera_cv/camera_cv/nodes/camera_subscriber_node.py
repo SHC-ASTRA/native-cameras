@@ -1,3 +1,15 @@
+# ROS Python library
+import rclpy
+# ROS node
+from rclpy.node import Node
+# ROS parameters
+import rcl_interfaces.msg # ParameterDescriptor
+# ROS interfaces
+    # InternodeCommunication InternodeCameraCompressed InternodeCameraRaw
+import camera_cv_interfaces.msg 
+# For getting time and date data
+from datetime import datetime
+
 class CameraProcessingNode(Node):
     active_subscribers = []
     # Array of last TOPIC_NUMBER - 1 frame datas
@@ -5,9 +17,11 @@ class CameraProcessingNode(Node):
     frame_data_val = len(fetch_image_topics.keys())
     # If image transport is compressed
     compressed_enable = False;
+    # Publisher to the OpenCV processor
+    opencv_publisher = None
 
     # Function constructor
-    def __init__(self, set_compressed=False, cv_node=None):
+    def __init__(self, set_compressed=False):
         # Compressed image transport
         compressed_enable = set_compressed
         # Image Interface Type
@@ -16,11 +30,21 @@ class CameraProcessingNode(Node):
         dt_o = datetime.now()
         # Provide HH:MM:SS of when the ROS node instance was initalized
         dt_hhmmss = f"{dt_o.hour}_{dt_o.minute}_{dt_o.second}"
-        name_assignment = f"astra_cameras_cv{'_compressed' if self.compressed_enable else ''}_{dt_hhmmss}" 
+        name_assignment = f"native_cameras_subscriber{'_compressed' if self.compressed_enable else ''}_{dt_hhmmss}" 
         # Call the parent class (rclpy.node.Node) constructor
         super().__init__(name_assignment)
 
-        self.get_logger().info(f"Subscriber node {name_assignment} started")
+        self.get_logger().info(f"Node {name_assignment} started")
+
+        cur_message = "Attempting to create publisher"
+        # Publishing to an OpenCV processor
+        if self.compressed_enable:
+            self.opencv_publisher = self.create_publisher("")
+        else:
+            self.opencv_publisher = self.create_publisher("")
+                    
+
+
         # Subscribe to available cameras
         self.subscribe_to_cameras()
 
@@ -58,7 +82,7 @@ class CameraProcessingNode(Node):
                 # This data should be passed off to a node, go nowhere further,
                 # or some third thing
 
-                self.cv_node
+
                 """ 
                 current_frame = self.opencv_bridge.compressed_imgmsg_to_cv2(msg)
                 # Perform color swapping in the event the image

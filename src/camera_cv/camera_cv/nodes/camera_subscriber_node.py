@@ -6,7 +6,8 @@ from rclpy.node import Node
 import rcl_interfaces.msg # ParameterDescriptor
 # ROS interfaces
     # InternodeCommunication InternodeCameraCompressed InternodeCameraRaw
-import camera_cv_interfaces.msg 
+import camera_cv_interfaces.msg
+import sensor_msgs.msg # CompressedImage Image
 # For getting time and date data
 from datetime import datetime
 
@@ -19,31 +20,58 @@ class CameraProcessingNode(Node):
     compressed_enable = False;
     # Publisher to the OpenCV processor
     opencv_publisher = None
+    # Interface
+    interface_type_str = None
+    interface_type = None
+    # Node name
+    self.name_assignment = None
 
     # Function constructor
     def __init__(self, set_compressed=False):
         # Compressed image transport
-        compressed_enable = set_compressed
+        self.compressed_enable = set_compressed
         # Image Interface Type
-        interface_type = f"'sensor_msgs/msg/{"Compressed" if self.compressed_enable else ''}Image'"
+        self.interface_type_str = f"'sensor_msgs/msg/{"Compressed" if self.compressed_enable else ''}Image'"
+        if self.compressed_enable:
+            self.interface = sensor_msgs.msg.CompressedImage
+        else:
+            self.interface = sensor_msgs.msg.Image
         # datetime instance of when the ROS node instance was initalzied
         dt_o = datetime.now()
         # Provide HH:MM:SS of when the ROS node instance was initalized
         dt_hhmmss = f"{dt_o.hour}_{dt_o.minute}_{dt_o.second}"
-        name_assignment = f"native_cameras_subscriber{'_compressed' if self.compressed_enable else ''}_{dt_hhmmss}" 
+        self.name_assignment = f"native_cameras_subscriber{'_compressed' if self.compressed_enable else ''}_{dt_hhmmss}" 
         # Call the parent class (rclpy.node.Node) constructor
-        super().__init__(name_assignment)
+        super().__init__(self.name_assignment)
 
-        self.get_logger().info(f"Node {name_assignment} started")
+        self.get_logger().info(f"Node {self.name_assignment} started")
+        
+        self.get_logger().info(f"{self.name_assignment} is making use of interface topic {interface_type_str}")
+
 
         cur_message = "Attempting to create publisher"
         # Publishing to an OpenCV processor
         if self.compressed_enable:
-            self.opencv_publisher = self.create_publisher("")
+            # Compressed Publisher
+            self.opencv_publisher = self.create_publisher(
+                camera_cv_interfaces.msg.InternodeCameraCompressed,
+                "/astra/intraprocess/native_cameras/cam_proc_out/compressed",
+                10
+            )
+            # Update the output message
+            cur_message += f"with topic \"/astra/intraprocess/native_cameras/cam_proc_out/compressed\""
         else:
-            self.opencv_publisher = self.create_publisher("")
-                    
+            # Raw Publisher
+            self.opencv_publisher = self.create_publisher(
+                camera_cv_interfaces.msg.InternodeCameraRaw,
+                "/astra/intraprocess/native_cameras/cam_proc_out/raw",
+                10
+            )
+            # Update the output message
+            cur_message += f"with topic \"/astra/intraprocess/native_cameras/cam_proc_out/raw\""
 
+        # Display the message
+        self.get_logger().info(f"{cur_message}")
 
         # Subscribe to available cameras
         self.subscribe_to_cameras()
@@ -82,6 +110,13 @@ class CameraProcessingNode(Node):
                 # This data should be passed off to a node, go nowhere further,
                 # or some third thing
 
+                # PUBLISH TO THE SUBSCRIBER
+                # PUBLISH TO THE SUBSCRIBER
+                # PUBLISH TO THE SUBSCRIBER
+                # PUBLISH TO THE SUBSCRIBER
+                # PUBLISH TO THE SUBSCRIBER
+                # PUBLISH TO THE SUBSCRIBER
+
 
                 """ 
                 current_frame = self.opencv_bridge.compressed_imgmsg_to_cv2(msg)
@@ -95,9 +130,11 @@ class CameraProcessingNode(Node):
                 """
                 
             # Create the subscriber
-            self.create_subscription(
-                self.interface_type,
-                image_topic,
-                general_camera_callback,
-                10
+            active_subscribers.append(
+                self.create_subscription(
+                    self.interface_type,
+                    image_topic,
+                    general_camera_callback,
+                    10
+                )
             )

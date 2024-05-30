@@ -1,0 +1,2 @@
+sensor_msgs/Image raw_img
+camera_cv_interfaces/InternodeCommunication internode_data
